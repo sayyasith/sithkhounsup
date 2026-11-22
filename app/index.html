@@ -561,7 +561,14 @@ function loginView(msg){
    <label class="f" style="margin-top:10px">ລະຫັດຜ່ານ</label><input id="lp" type="password" autocomplete="current-password" required>
    <div id="lmsg" style="color:var(--red);font-size:13px;min-height:20px;margin-top:8px">${esc(msg||'')}</div>
    <button class="btn pri" style="width:100%">ເຂົ້າສູ່ລະບົບ</button></form>
+   <button class="link" style="display:block;margin:10px auto 0" onclick="forgotPw()">ລືມລະຫັດຜ່ານ?</button>
    <button class="btn" style="width:100%;margin-top:8px;background:none;color:var(--muted)" onclick="go('settings')">⚙️ ຕັ້ງຄ່າເຊີບເວີ</button></div></div>`;
+}
+async function forgotPw(){
+  const email=$('#le').value.trim();
+  if(!/^\S+@\S+\.\S+$/.test(email)){$('#lmsg').textContent='ພິມອີເມວໃຫ້ຄົບກ່ອນ (ເຊັ່ນ name@gmail.com) ແລ້ວກົດ "ລືມລະຫັດຜ່ານ?" ອີກຄັ້ງ';return}
+  try{await FB.au.sendPasswordResetEmail(FB.auth,email);$('#lmsg').style.color='var(--green)';$('#lmsg').textContent='✅ ສົ່ງລິ້ງຕັ້ງລະຫັດໃໝ່ໄປທີ່ '+email+' ແລ້ວ — ເປີດອີເມວ (ກວດ Spam ນຳ) ແລ້ວກົດລິ້ງ'}
+  catch(e){$('#lmsg').textContent='ສົ່ງບໍ່ໄດ້: '+(e.code||e.message)}
 }
 async function doLogin(){
   $('#lmsg').textContent='⏳ ...';
