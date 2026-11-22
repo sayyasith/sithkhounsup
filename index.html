@@ -309,7 +309,7 @@ const localProducts=lsGet('products');
 renderProducts(Array.isArray(localProducts)&&localProducts.length?localProducts:PRODUCTS);
 
 // If the billing app is connected to Firebase, read the public website info everyone can see.
-const FIREBASE_CONFIG=null; // keep in sync with app/index.html
+const FIREBASE_CONFIG={apiKey:"AIzaSyBkfNUXfgjzSVlS_4waZCRdbK_UvQVc7WI",authDomain:"sithkhounsup-379f9.firebaseapp.com",projectId:"sithkhounsup-379f9",storageBucket:"sithkhounsup-379f9.firebasestorage.app",messagingSenderId:"669350506692",appId:"1:669350506692:web:a6f332a6d13d1037aa5991"}; // keep in sync with app/index.html
 (async()=>{
   const cfg=lsGet('fbconfig')||FIREBASE_CONFIG;
   if(!cfg||!cfg.apiKey||!cfg.projectId)return;

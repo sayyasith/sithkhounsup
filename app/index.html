@@ -350,7 +350,7 @@ const DB={
    ວາງ firebaseConfig ຂອງທ່ານໄວ້ບ່ອນນີ້ ເພື່ອໃຫ້ທຸກເຄື່ອງເຊື່ອມຕໍ່ເອງ
    (Firebase console > Project settings > Your apps > SDK setup and configuration > Config)
    ຕົວຢ່າງ: const FIREBASE_CONFIG={apiKey:"AIza...",authDomain:"xxx.firebaseapp.com",projectId:"xxx",storageBucket:"xxx.appspot.com",messagingSenderId:"123",appId:"1:123:web:abc"};  */
-const FIREBASE_CONFIG=null;
+const FIREBASE_CONFIG={apiKey:"AIzaSyBkfNUXfgjzSVlS_4waZCRdbK_UvQVc7WI",authDomain:"sithkhounsup-379f9.firebaseapp.com",projectId:"sithkhounsup-379f9",storageBucket:"sithkhounsup-379f9.firebasestorage.app",messagingSenderId:"669350506692",appId:"1:669350506692:web:a6f332a6d13d1037aa5991"};
 const FB_SDK='https://www.gstatic.com/firebasejs/10.12.2/';
 let cloud=DB.get('fbconfig',null)||FIREBASE_CONFIG;
 const cloudOn=()=>!!(cloud&&cloud.apiKey&&cloud.projectId);
