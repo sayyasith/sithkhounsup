@@ -372,7 +372,7 @@ async function initCloud(){
     catch(e){db=fs.getFirestore(a)}
     const emu=DB.get('emu',null); // dev-only hook for the local Firebase emulator
     if(emu){au.connectAuthEmulator(auth,'http://127.0.0.1:'+emu.auth,{disableWarnings:true});fs.connectFirestoreEmulator(db,'127.0.0.1',emu.fs)}
-    FB={auth,db,au,fs};
+    FB={auth,db,au,fs,app,emu};
     au.onAuthStateChanged(auth,u=>{
       const wasReady=authReady;
       session=u?{email:u.email,uid:u.uid}:null; authReady=true;
@@ -505,27 +505,52 @@ function listenStaff(){
 function staffCard(){
   return `<div class="card"><div class="chead"><h2><span class="hic">👥</span>ພະນັກງານ & ສິດການໃຊ້ງານ</h2></div>
   <p style="margin-top:0;color:var(--muted);font-size:13px">ເພີ່ມພະນັກງານ ແລ້ວຕິກເລືອກວ່າແຕ່ລະຄົນເຮັດຫຍັງໄດ້. ທຸກຄົນ <b>ສ້າງບິນ ແລະ ໃບສະເໜີລາຄາໃໝ່</b> ໄດ້ສະເໝີ.
-  ${cloudOn()?' ຢ່າລືມສ້າງບັນຊີເຂົ້າລະບົບໃຫ້ພະນັກງານໃນ Firebase → Authentication ດ້ວຍອີເມວດຽວກັນ.':''}</p>
+  ${cloudOn()?' ໃສ່ເບີໂທ ແລະ ຕັ້ງລະຫັດຜ່ານ ແລ້ວກົດເພີ່ມ — ລະບົບຈະສ້າງບັນຊີເຂົ້າລະບົບໃຫ້ທັນທີ. ບອກພະນັກງານໃຫ້ເຂົ້າລະບົບດ້ວຍ <b>ເບີໂທ + ລະຫັດນີ້</b>.':''}</p>
   <div style="overflow:auto"><table class="t"><tr><th>ພະນັກງານ</th>${PERMS.map(([k,l])=>`<th style="text-align:center;font-size:11.5px;min-width:86px">${l}</th>`).join('')}<th></th></tr>
-  ${staffList.length?staffList.map((s,i)=>`<tr><td><b>${esc(s.name||'-')}</b> <span class="tag cat">${esc((ROLES[s.role]||{}).label||'')}</span><br><small style="color:var(--muted)">${esc(showId(s.email))}</small>${cloudOn()&&s.email.endsWith('@'+PHONE_DOMAIN)?`<br><small style="color:var(--brand-d)">ID ໃນ Firebase: ${esc(s.email)}</small>`:''}</td>
+  ${staffList.length?staffList.map((s,i)=>`<tr><td><b>${esc(s.name||'-')}</b> <span class="tag cat">${esc((ROLES[s.role]||{}).label||'')}</span><br><small style="color:var(--muted)">${esc(showId(s.email))}</small></td>
     ${PERMS.map(([k])=>`<td style="text-align:center"><input type="checkbox" style="width:20px;height:20px;accent-color:#009B77" ${s.perms&&s.perms[k]?'checked':''} onchange="setPerm(${i},'${k}',this.checked)"></td>`).join('')}
     <td><button class="x" title="ລຶບ" onclick="delStaff(${i})">×</button></td></tr>`).join('')
   :`<tr><td colspan="${PERMS.length+2}" class="empty" style="padding:16px">ຍັງບໍ່ມີພະນັກງານ</td></tr>`}</table></div>
   <div class="row" style="margin-top:14px;align-items:flex-end">
    <div><label class="f">ຊື່</label><input id="sn" placeholder="ເຊັ່ນ ນ້ອງແກ້ວ"></div>
    <div><label class="f">ເບີໂທ ຫຼື ອີເມວ (ໃຊ້ເຂົ້າລະບົບ)</label><input id="se" type="text" inputmode="tel" placeholder="020 xxxx xxxx"></div>
+   ${cloudOn()?`<div><label class="f">ລະຫັດຜ່ານ (ຢ່າງໜ້ອຍ 6 ໂຕ)</label><input id="sp" type="text" autocomplete="new-password" placeholder="ຕັ້ງລະຫັດໃຫ້ພະນັກງານ"></div>`:''}
    <div><label class="f">ຕຳແໜ່ງ (ຕັ້ງສິດເລີ່ມຕົ້ນ)</label><select id="sr">${Object.entries(ROLES).map(([k,r])=>`<option value="${k}">${r.label}</option>`).join('')}</select></div>
    <div style="flex:0 0 auto;min-width:0"><button class="btn pri" onclick="addStaff()">+ ເພີ່ມພະນັກງານ</button></div></div>
   ${!cloudOn()&&staffList.length?`<div style="margin-top:16px;padding:14px;border-radius:12px;background:var(--forest-soft)"><label class="f">👁 ທົດລອງເບິ່ງແອັບໃນສິດຂອງພະນັກງານ</label>
     <select onchange="setViewAs(this.value)"><option value="">ເຈົ້າຂອງ (ສິດທັງໝົດ)</option>${staffList.map(s=>`<option value="${esc(s.email)}" ${viewAs===s.email?'selected':''}>${esc(s.name||showId(s.email))}</option>`).join('')}</select></div>`:''}
   </div>`;
 }
-function addStaff(){
-  const email=toLoginId($('#se').value),name=$('#sn').value.trim(),role=$('#sr').value;
+async function addStaff(){
+  const email=toLoginId($('#se').value),name=$('#sn').value.trim(),role=$('#sr').value,pw=($('#sp')||{}).value||'';
   if(!/^\S+@\S+\.\S+$/.test(email)){alert('ກະລຸນາໃສ່ເບີໂທ (ຢ່າງໜ້ອຍ 8 ໂຕເລກ) ຫຼື ອີເມວໃຫ້ຖືກຕ້ອງ');return}
-  if(staffList.some(s=>s.email===email)){alert('ມີອີເມວນີ້ແລ້ວ');return}
+  if(staffList.some(s=>s.email===email)){alert('ມີພະນັກງານຄົນນີ້ແລ້ວ');return}
+  if(cloudOn()){
+    if(pw.length<6){alert('ກະລຸນາຕັ້ງລະຫັດຜ່ານຢ່າງໜ້ອຍ 6 ໂຕ');return}
+    const r=await createStaffLogin(email,pw);
+    if(r==='exists'&&!confirm('ເບີ/ອີເມວນີ້ມີບັນຊີຢູ່ແລ້ວ (ລະຫັດເກົ່າຍັງໃຊ້ໄດ້). ເພີ່ມເຂົ້າລາຍຊື່ພະນັກງານຕໍ່ບໍ?'))return;
+    if(r&&r!=='ok'&&r!=='exists'){alert('ສ້າງບັນຊີບໍ່ໄດ້: '+r);return}
+  }
   const s={id:email,email,name,role,perms:{...ROLES[role].perms}};
   staffList.push(s);saveStaff(s);settingsView();
+  if(cloudOn())alert('✅ ເພີ່ມ '+(name||showId(email))+' ແລ້ວ\nເຂົ້າລະບົບດ້ວຍ: '+showId(email)+'\nລະຫັດຜ່ານ: '+pw);
+}
+/* Creates the staff member's login on a separate Firebase instance, so the owner stays signed in. */
+async function createStaffLogin(email,pw){
+  try{
+    const name='staff-creator';
+    const a2=FB.app.getApps().find(x=>x.name===name)||FB.app.initializeApp(cloud,name);
+    const auth2=FB.au.getAuth(a2);
+    if(FB.emu&&!auth2.emulatorConfig)FB.au.connectAuthEmulator(auth2,'http://127.0.0.1:'+FB.emu.auth,{disableWarnings:true});
+    await FB.au.createUserWithEmailAndPassword(auth2,email,pw);
+    await FB.au.signOut(auth2);
+    return 'ok';
+  }catch(e){
+    if(e.code==='auth/email-already-in-use')return 'exists';
+    if(e.code==='auth/operation-not-allowed'||e.code==='auth/admin-restricted-operation')return 'ຍັງບໍ່ໄດ້ເປີດການສ້າງບັນຊີໃນ Firebase (User actions → Enable create)';
+    if(e.code==='auth/weak-password')return 'ລະຫັດຜ່ານສັ້ນເກີນໄປ';
+    return e.code||e.message;
+  }
 }
 function setPerm(i,k,v){const s=staffList[i];s.perms={...(s.perms||{}),[k]:v};saveStaff(s);computeMe()}
 function delStaff(i){const s=staffList[i];if(!confirm('ລຶບ '+(s.name||s.email)+' ອອກຈາກລະບົບ?'))return;staffList.splice(i,1);DB.set('staff',staffList);removeRow(s.id,'staff');if(viewAs===s.email)viewAs='',DB.set('viewAs','');computeMe();settingsView()}
