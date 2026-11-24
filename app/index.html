@@ -821,17 +821,18 @@ function docsView(){
 function productsView(){
   setTimeout(()=>{if(can('editPrices'))return;document.querySelectorAll('#main input,#main select').forEach(e=>e.disabled=true);document.querySelectorAll('#main .x,#main .ptitle-row .btn:not(.keep)').forEach(e=>e.style.display='none')});
   $('#main').innerHTML=`<div class="ptitle-row"><div><h1>ລາຍການສິນຄ້າ & ລາຄາ</h1><div style="color:var(--muted);font-size:13px;margin-top:2px">${products.length} ລາຍການ · ແກ້ໄຂໃນຕາຕະລາງໄດ້ເລີຍ</div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><label class="btn out">⬆️ ນຳເຂົ້າ Excel<input type="file" accept=".xlsx,.xls,.csv" hidden onchange="importExcel(this.files[0]);this.value=''"></label><button class="btn out keep" onclick="exportExcel()">⬇️ ດາວໂຫຼດ Excel</button><button class="btn pri" onclick="addProd()">+ ເພີ່ມສິນຄ້າ</button></div></div>
-  <div class="card" style="overflow:auto"><table class="t"><tr><th>ຮູບ</th><th>ໝວດ</th><th>ຊື່ສິນຄ້າ</th><th class="n">ລາຄາ</th><th>ຫົວໜ່ວຍ</th><th>ຄ່າຂົນສົ່ງ</th><th>ໝາຍເຫດ</th><th></th></tr>
+  <div class="card" style="overflow:auto"><table class="t"><tr><th>ຮູບ</th><th>ໝວດ</th><th>ຊື່ສິນຄ້າ</th><th class="n">ລາຄາຂາຍ</th>${can('editPrices')?'<th class="n">ລາຄາຕົ້ນທຶນ</th>':''}<th>ຫົວໜ່ວຍ</th><th>ຄ່າຂົນສົ່ງ</th><th>ໝາຍເຫດ</th><th></th></tr>
   ${products.map((p,k)=>`<tr>
    <td style="white-space:nowrap"><label class="pimg" title="ອັບໂຫຼດຮູບ">${p.img?`<img src="${p.img}" alt="">`:'📷'}<input type="file" accept="image/*" hidden onchange="setProdImg(${k},this.files[0])"></label>${p.img?`<button class="x" style="font-size:14px" title="ລຶບຮູບ" onclick="products[${k}].img='';saveProd(${k});productsView()">×</button>`:''}</td>
    <td><input value="${esc(p.cat)}" onchange="products[${k}].cat=this.value;saveProd(${k})"></td>
    <td><input value="${esc(p.name)}" style="min-width:180px" onchange="products[${k}].name=this.value;saveProd(${k})"></td>
    <td><input type="text" inputmode="numeric" value="${p.price?fmt(p.price):''}" style="text-align:right;min-width:110px;${p.price?'':'background:#fff7ec'}" oninput="numIn(this)" onchange="products[${k}].price=numIn(this);saveProd(${k})"></td>
+   ${can('editPrices')?`<td><input type="text" inputmode="numeric" value="${p.cost?fmt(p.cost):''}" style="text-align:right;min-width:110px;background:#F3F7F5" oninput="numIn(this)" onchange="products[${k}].cost=numIn(this);saveProd(${k})"></td>`:''}
    <td><input value="${esc(p.unit)}" style="width:70px" onchange="products[${k}].unit=this.value;saveProd(${k})"></td>
    <td><select onchange="products[${k}].ship=this.value;saveProd(${k})">${['','ລວມ','ບໍ່ລວມ'].map(o=>`<option ${p.ship===o?'selected':''}>${o}</option>`).join('')}</select></td>
    <td><input value="${esc(p.note)}" onchange="products[${k}].note=this.value;saveProd(${k})"></td>
    <td><button class="x" onclick="if(confirm('ລຶບ?')){removeRow(products[${k}].id,'product');products.splice(${k},1);saveLocal();productsView()}">×</button></td></tr>`).join('')}</table>
-  <p style="color:var(--muted);font-size:13px">💡 ຊ່ອງສີສົ້ມ = ຍັງບໍ່ມີລາຄາ · ກົດ 📷 ເພື່ອໃສ່ຮູບສິນຄ້າ · ນຳເຂົ້າ Excel: ຕ້ອງມີຫົວຖັນ "ຊື່ສິນຄ້າ" ແລະ "ລາຄາ" (ດາວໂຫຼດ Excel ເພື່ອເບິ່ງແບບຟອມ)</p></div>`;
+  <p style="color:var(--muted);font-size:13px">💡 ຊ່ອງສີສົ້ມ = ຍັງບໍ່ມີລາຄາ · ກົດ 📷 ເພື່ອໃສ່ຮູບສິນຄ້າ · ນຳເຂົ້າ Excel: ຕ້ອງມີຫົວຖັນ "ຊື່ສິນຄ້າ" ແລະ "ລາຄາຂາຍ" (ຖັນ "ລາຄາຕົ້ນທຶນ" ມີ ຫຼື ບໍ່ມີ ກໍໄດ້) (ດາວໂຫຼດ Excel ເພື່ອເບິ່ງແບບຟອມ)</p></div>`;
 }
 function addProd(){products.unshift({id:uid(),ord:-Date.now(),cat:'ອື່ນໆ',name:'',price:0,unit:'',ship:'',note:''});saveProd(0);productsView()}
 function saveProd(k){saveLocal();putRow('product',products[k])}
@@ -1003,8 +1004,8 @@ const XLSX_URL='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min
 async function exportExcel(){
   try{
     await loadScript(XLSX_URL);
-    const rows=[['ໝວດ','ຊື່ສິນຄ້າ','ລາຄາ (ກີບ)','ຫົວໜ່ວຍ','ຄ່າຂົນສົ່ງ','ໝາຍເຫດ'],...products.map(p=>[p.cat||'',p.name||'',p.price?fmt(p.price):'',p.unit||'',p.ship||'',p.note||''])];
-    const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:22},{wch:36},{wch:14},{wch:10},{wch:12},{wch:28}];
+    const rows=[['ໝວດ','ຊື່ສິນຄ້າ','ລາຄາຂາຍ (ກີບ)',...(can('editPrices')?['ລາຄາຕົ້ນທຶນ (ກີບ)']:[]),'ຫົວໜ່ວຍ','ຄ່າຂົນສົ່ງ','ໝາຍເຫດ'],...products.map(p=>[p.cat||'',p.name||'',p.price?fmt(p.price):'',...(can('editPrices')?[p.cost?fmt(p.cost):'']:[]),p.unit||'',p.ship||'',p.note||''])];
+    const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:22},{wch:36},{wch:14},...(can('editPrices')?[{wch:16}]:[]),{wch:10},{wch:12},{wch:28}];
     const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'ສິນຄ້າ');XLSX.writeFile(wb,'SKS-ລາຍການສິນຄ້າ-'+today()+'.xlsx');
   }catch(e){alert('ດາວໂຫຼດບໍ່ໄດ້: '+e.message)}
 }
@@ -1013,16 +1014,17 @@ function parseSheet(rows){
   const isName=c=>/ຊື່ສິນຄ້າ|ລາຍການສິນຄ້າ|product|name/i.test(String(c));
   const hi=rows.findIndex(r=>r.some(isName));if(hi<0)return[];
   const H=rows[hi].map(c=>String(c));const col=re=>H.findIndex(c=>re.test(c));
-  const cName=H.findIndex(isName),cPrice=col(/ລາຄາ|price/i),cUnit=col(/ຫົວໜ່ວຍ|unit/i),cCat=col(/ໝວດ|category/i),cShip=col(/ຂົນສົ່ງ|ship/i),cNote=col(/ໝາຍເຫດ|note/i);
+  const cName=H.findIndex(isName),cCost=col(/ຕົ້ນທຶນ|cost/i),cPrice=(c=>c>=0?c:H.findIndex(h=>/ລາຄາ|price/i.test(h)&&!/ຕົ້ນທຶນ|cost/i.test(h)))(col(/ລາຄາຂາຍ|sale/i)),cUnit=col(/ຫົວໜ່ວຍ|unit/i),cCat=col(/ໝວດ|category/i),cShip=col(/ຂົນສົ່ງ|ship/i),cNote=col(/ໝາຍເຫດ|note/i);
   let curCat='ອື່ນໆ';const out=[];
   for(const r of rows.slice(hi+1)){
     const name=String(r[cName]??'').trim();
     if(!name){const first=String(r.find(c=>String(c).trim())??'').trim();if(first&&isNaN(+first))curCat=first;continue}
     const pp=cPrice>=0?parsePriceCell(r[cPrice]):{price:0,unit:''};
+    const cost=cCost>=0?parsePriceCell(r[cCost]).price:0;
     const shipTxt=cShip>=0?String(r[cShip]??''):'';
     const cat=cCat>=0&&String(r[cCat]??'').trim()?String(r[cCat]).trim():curCat;
     const unit=cUnit>=0&&String(r[cUnit]??'').trim()?String(r[cUnit]).trim():pp.unit;
-    out.push({cat,name,price:pp.price,unit,ship:/ບໍ່ລວມ/.test(shipTxt)?'ບໍ່ລວມ':/ລວມ/.test(shipTxt)?'ລວມ':'',note:cNote>=0?String(r[cNote]??'').trim():''});
+    out.push({cat,name,price:pp.price,cost,unit,ship:/ບໍ່ລວມ/.test(shipTxt)?'ບໍ່ລວມ':/ລວມ/.test(shipTxt)?'ລວມ':'',note:cNote>=0?String(r[cNote]??'').trim():''});
   }
   return out;
 }
@@ -1040,7 +1042,7 @@ async function importExcel(file){
     if(!confirm(`ພົບ ${items.length} ລາຍການໃນໄຟລ໌\n• ເພີ່ມໃໝ່: ${add}\n• ອັບເດດລາຄາ/ຂໍ້ມູນ: ${items.length-add}\n\nນຳເຂົ້າເລີຍບໍ?`))return;
     let ord=Math.max(0,...products.map(p=>+p.ord||0));const changed=[];
     for(const {it,ex} of plan){
-      if(ex){ex.cat=it.cat||ex.cat;ex.unit=it.unit||ex.unit;ex.ship=it.ship||ex.ship;ex.note=it.note||ex.note;if(it.price)ex.price=it.price;changed.push(ex)}
+      if(ex){ex.cat=it.cat||ex.cat;ex.unit=it.unit||ex.unit;ex.ship=it.ship||ex.ship;ex.note=it.note||ex.note;if(it.price)ex.price=it.price;if(it.cost)ex.cost=it.cost;changed.push(ex)}
       else{const p={id:uid(),ord:++ord,img:'',...it};products.push(p);changed.push(p)}
     }
     saveLocal();changed.forEach(p=>putRow('product',p));productsView();showToast(`✅ ນຳເຂົ້າ ${changed.length} ລາຍການແລ້ວ`);
