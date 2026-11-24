@@ -1003,7 +1003,7 @@ const XLSX_URL='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min
 async function exportExcel(){
   try{
     await loadScript(XLSX_URL);
-    const rows=[['ໝວດ','ຊື່ສິນຄ້າ','ລາຄາ (ກີບ)','ຫົວໜ່ວຍ','ຄ່າຂົນສົ່ງ','ໝາຍເຫດ'],...products.map(p=>[p.cat||'',p.name||'',p.price||'',p.unit||'',p.ship||'',p.note||''])];
+    const rows=[['ໝວດ','ຊື່ສິນຄ້າ','ລາຄາ (ກີບ)','ຫົວໜ່ວຍ','ຄ່າຂົນສົ່ງ','ໝາຍເຫດ'],...products.map(p=>[p.cat||'',p.name||'',p.price?fmt(p.price):'',p.unit||'',p.ship||'',p.note||''])];
     const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:22},{wch:36},{wch:14},{wch:10},{wch:12},{wch:28}];
     const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'ສິນຄ້າ');XLSX.writeFile(wb,'SKS-ລາຍການສິນຄ້າ-'+today()+'.xlsx');
   }catch(e){alert('ດາວໂຫຼດບໍ່ໄດ້: '+e.message)}
