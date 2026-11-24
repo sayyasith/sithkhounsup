@@ -507,22 +507,22 @@ function staffCard(){
   <p style="margin-top:0;color:var(--muted);font-size:13px">ເພີ່ມພະນັກງານ ແລ້ວຕິກເລືອກວ່າແຕ່ລະຄົນເຮັດຫຍັງໄດ້. ທຸກຄົນ <b>ສ້າງບິນ ແລະ ໃບສະເໜີລາຄາໃໝ່</b> ໄດ້ສະເໝີ.
   ${cloudOn()?' ຢ່າລືມສ້າງບັນຊີເຂົ້າລະບົບໃຫ້ພະນັກງານໃນ Firebase → Authentication ດ້ວຍອີເມວດຽວກັນ.':''}</p>
   <div style="overflow:auto"><table class="t"><tr><th>ພະນັກງານ</th>${PERMS.map(([k,l])=>`<th style="text-align:center;font-size:11.5px;min-width:86px">${l}</th>`).join('')}<th></th></tr>
-  ${staffList.length?staffList.map((s,i)=>`<tr><td><b>${esc(s.name||'-')}</b> <span class="tag cat">${esc((ROLES[s.role]||{}).label||'')}</span><br><small style="color:var(--muted)">${esc(s.email)}</small></td>
+  ${staffList.length?staffList.map((s,i)=>`<tr><td><b>${esc(s.name||'-')}</b> <span class="tag cat">${esc((ROLES[s.role]||{}).label||'')}</span><br><small style="color:var(--muted)">${esc(showId(s.email))}</small>${cloudOn()&&s.email.endsWith('@'+PHONE_DOMAIN)?`<br><small style="color:var(--brand-d)">ID ໃນ Firebase: ${esc(s.email)}</small>`:''}</td>
     ${PERMS.map(([k])=>`<td style="text-align:center"><input type="checkbox" style="width:20px;height:20px;accent-color:#009B77" ${s.perms&&s.perms[k]?'checked':''} onchange="setPerm(${i},'${k}',this.checked)"></td>`).join('')}
     <td><button class="x" title="ລຶບ" onclick="delStaff(${i})">×</button></td></tr>`).join('')
   :`<tr><td colspan="${PERMS.length+2}" class="empty" style="padding:16px">ຍັງບໍ່ມີພະນັກງານ</td></tr>`}</table></div>
   <div class="row" style="margin-top:14px;align-items:flex-end">
    <div><label class="f">ຊື່</label><input id="sn" placeholder="ເຊັ່ນ ນ້ອງແກ້ວ"></div>
-   <div><label class="f">ອີເມວ (ໃຊ້ເຂົ້າລະບົບ)</label><input id="se" type="email" placeholder="name@gmail.com"></div>
+   <div><label class="f">ເບີໂທ ຫຼື ອີເມວ (ໃຊ້ເຂົ້າລະບົບ)</label><input id="se" type="text" inputmode="tel" placeholder="020 xxxx xxxx"></div>
    <div><label class="f">ຕຳແໜ່ງ (ຕັ້ງສິດເລີ່ມຕົ້ນ)</label><select id="sr">${Object.entries(ROLES).map(([k,r])=>`<option value="${k}">${r.label}</option>`).join('')}</select></div>
    <div style="flex:0 0 auto;min-width:0"><button class="btn pri" onclick="addStaff()">+ ເພີ່ມພະນັກງານ</button></div></div>
   ${!cloudOn()&&staffList.length?`<div style="margin-top:16px;padding:14px;border-radius:12px;background:var(--forest-soft)"><label class="f">👁 ທົດລອງເບິ່ງແອັບໃນສິດຂອງພະນັກງານ</label>
-    <select onchange="setViewAs(this.value)"><option value="">ເຈົ້າຂອງ (ສິດທັງໝົດ)</option>${staffList.map(s=>`<option value="${esc(s.email)}" ${viewAs===s.email?'selected':''}>${esc(s.name||s.email)}</option>`).join('')}</select></div>`:''}
+    <select onchange="setViewAs(this.value)"><option value="">ເຈົ້າຂອງ (ສິດທັງໝົດ)</option>${staffList.map(s=>`<option value="${esc(s.email)}" ${viewAs===s.email?'selected':''}>${esc(s.name||showId(s.email))}</option>`).join('')}</select></div>`:''}
   </div>`;
 }
 function addStaff(){
-  const email=$('#se').value.trim().toLowerCase(),name=$('#sn').value.trim(),role=$('#sr').value;
-  if(!/^\S+@\S+\.\S+$/.test(email)){alert('ກະລຸນາໃສ່ອີເມວໃຫ້ຖືກຕ້ອງ');return}
+  const email=toLoginId($('#se').value),name=$('#sn').value.trim(),role=$('#sr').value;
+  if(!/^\S+@\S+\.\S+$/.test(email)){alert('ກະລຸນາໃສ່ເບີໂທ (ຢ່າງໜ້ອຍ 8 ໂຕເລກ) ຫຼື ອີເມວໃຫ້ຖືກຕ້ອງ');return}
   if(staffList.some(s=>s.email===email)){alert('ມີອີເມວນີ້ແລ້ວ');return}
   const s={id:email,email,name,role,perms:{...ROLES[role].perms}};
   staffList.push(s);saveStaff(s);settingsView();
@@ -557,22 +557,27 @@ function loginView(msg){
    <div style="text-align:center"><img src="${LOGO}" style="width:130px"></div>
    <h2 style="text-align:center;margin:10px 0 16px">ເຂົ້າສູ່ລະບົບ</h2>
    <form onsubmit="doLogin();return false">
-   <label class="f">ອີເມວ</label><input id="le" type="email" autocomplete="username" required>
+   <label class="f">ເບີໂທ ຫຼື ອີເມວ</label><input id="le" type="text" inputmode="email" autocomplete="username" placeholder="020 xxxx xxxx ຫຼື name@gmail.com" required>
    <label class="f" style="margin-top:10px">ລະຫັດຜ່ານ</label><input id="lp" type="password" autocomplete="current-password" required>
    <div id="lmsg" style="color:var(--red);font-size:13px;min-height:20px;margin-top:8px">${esc(msg||'')}</div>
    <button class="btn pri" style="width:100%">ເຂົ້າສູ່ລະບົບ</button></form>
    <button class="link" style="display:block;margin:10px auto 0" onclick="forgotPw()">ລືມລະຫັດຜ່ານ?</button>
    <button class="btn" style="width:100%;margin-top:8px;background:none;color:var(--muted)" onclick="go('settings')">⚙️ ຕັ້ງຄ່າເຊີບເວີ</button></div></div>`;
 }
+/* Staff can sign in with a phone number: it is turned into a private login ID like 2099698959@staff.sks */
+const PHONE_DOMAIN="staff.sks";
+function toLoginId(v){v=String(v||"").trim().toLowerCase();if(v.includes("@"))return v;let d=v.replace(/\D/g,"");if(d.startsWith("856"))d=d.slice(3);d=d.replace(/^0+/,"");return d.length>=8?d+"@"+PHONE_DOMAIN:""}
+function showId(e){e=String(e||"");if(e.endsWith("@"+PHONE_DOMAIN)){const d=e.split("@")[0];return "0"+d.replace(/^(\d{2})(\d{4})(\d+)$/,"$1 $2 $3")}return e}
 async function forgotPw(){
-  const email=$('#le').value.trim();
+  const email=toLoginId($('#le').value);
+  if(email.endsWith('@'+PHONE_DOMAIN)){$('#lmsg').textContent='ຜູ້ໃຊ້ເບີໂທ: ກະລຸນາແຈ້ງເຈົ້າຂອງຮ້ານໃຫ້ຕັ້ງລະຫັດໃໝ່ໃຫ້';return}
   if(!/^\S+@\S+\.\S+$/.test(email)){$('#lmsg').textContent='ພິມອີເມວໃຫ້ຄົບກ່ອນ (ເຊັ່ນ name@gmail.com) ແລ້ວກົດ "ລືມລະຫັດຜ່ານ?" ອີກຄັ້ງ';return}
   try{await FB.au.sendPasswordResetEmail(FB.auth,email);$('#lmsg').style.color='var(--green)';$('#lmsg').textContent='✅ ສົ່ງລິ້ງຕັ້ງລະຫັດໃໝ່ໄປທີ່ '+email+' ແລ້ວ — ເປີດອີເມວ (ກວດ Spam ນຳ) ແລ້ວກົດລິ້ງ'}
   catch(e){$('#lmsg').textContent='ສົ່ງບໍ່ໄດ້: '+(e.code||e.message)}
 }
 async function doLogin(){
   $('#lmsg').textContent='⏳ ...';
-  try{await FB.au.signInWithEmailAndPassword(FB.auth,$('#le').value.trim(),$('#lp').value)}
+  try{await FB.au.signInWithEmailAndPassword(FB.auth,toLoginId($('#le').value),$('#lp').value)}
   catch(e){const c=e.code||'';$('#lmsg').textContent=
     /invalid-credential|wrong-password|user-not-found|invalid-email/.test(c)?'ອີເມວ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກ':
     /network/.test(c)?'ເຊື່ອມຕໍ່ບໍ່ໄດ້ — ກວດເບິ່ງອິນເຕີເນັດ':
