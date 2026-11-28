@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light">
 <title>ສິດຄູນຊັບ</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#004634">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ສິດຄູນຊັບ">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+Lao:wght@400;600;700&family=Noto+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -151,6 +159,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acc);bac
   .stats.lgstats{grid-template-columns:repeat(2,minmax(0,1fr))}
   .tli{grid-template-columns:40px 32px 1fr;gap:6px}.tli:before{left:61px;top:32px}.tld{width:32px;height:32px;font-size:15px}
 }
+.instb{display:flex;align-items:center;gap:14px;background:#fff;border:1.5px solid #FFC56B;border-radius:18px;padding:14px 16px;margin-bottom:16px;box-shadow:0 8px 24px rgba(255,122,0,.15)}
+.instb .ii{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:22px;background:linear-gradient(135deg,#FF9F1C,#FF6B00);flex-shrink:0;box-shadow:0 0 18px rgba(255,122,0,.45)}
+.instb b{display:block}.instb small{color:var(--muted)}
+.insthelp{background:#FFF8EC;border-radius:14px;padding:12px 16px;margin:-8px 0 16px;font-size:14px;line-height:1.7}
 .mtop{display:none}
 .lang{display:flex;gap:3px;background:rgba(0,38,28,.45);border:1px solid rgba(143,227,181,.25);border-radius:12px;padding:3px}
 .lang button{flex:1;border:0;background:none;color:#BDF0D2;font-weight:700;font-size:12.5px;padding:6px 8px;border-radius:9px;cursor:pointer;font-family:inherit}
@@ -730,6 +742,7 @@ function home(){
     <div class="hact"><button class="btn white lg" onclick="go('new','receipt')">🧾 ອອກບິນຂາຍ</button>
       <button class="btn glass lg" onclick="go('new','quote')">📝 ສະເໜີລາຄາ</button></div>
   </section>
+  ${installBanner()}
   ${can('viewTotals')?'':`<div class="stats"><div class="stat c-a"><div class="ico">🧾</div><small>ບິນມື້ນີ້</small><b>${todayN}<span class="unit">ໃບ</span></b></div><div class="stat c-g"><div class="ico">📝</div><small>ໃບສະເໜີລາຄາ</small><b>${quotesN}<span class="unit">ໃບ</span></b></div></div>`}
   <div class="stats" ${can('viewTotals')?'':'hidden'}>
     <div class="stat c-o"><div class="ico">💰</div><small>ຍອດຂາຍທັງໝົດ</small><b>${fmt(sales)}<span class="unit">ກີບ</span></b></div>
@@ -1306,6 +1319,7 @@ const I18N=[
 ['ຈຳນວນເງິນ (ກີບ) — ຖ້າມີ','จำนวนเงิน (กีบ) — ถ้ามี','Amount (Kip) — optional'],['⬇ ລາຍຮັບ','⬇ รายรับ','⬇ In'],['⬆ ລາຍຈ່າຍ','⬆ รายจ่าย','⬆ Out'],['ລາຍລະອຽດ','รายละเอียด','Details'],
 ['ຈົດລາຍລະອຽດ, ຈຳນວນຄົນງານ, ບັນຫາທີ່ພົບ, ສິ່ງທີ່ຕ້ອງເຮັດຕໍ່...','จดรายละเอียด จำนวนคนงาน ปัญหาที่พบ สิ่งที่ต้องทำต่อ...','Notes, number of workers, problems, next steps...'],['📷 ໃສ່ຮູບ','📷 ใส่รูป','📷 Add photo'],
 ['ກະລຸນາໃສ່ຫົວຂໍ້ກ່ອນ','กรุณาใส่หัวข้อก่อน','Please enter a title first'],['ບັນທຶກແລ້ວ','บันทึกแล้ว','Saved'],['ລຶບບັນທຶກນີ້?','ลบบันทึกนี้?','Delete this entry?'],
+['ຕິດຕັ້ງແອັບລົງມືຖື / ຄອມ','ติดตั้งแอปลงมือถือ / คอม','Install the app on phone / computer'],['ເປີດໄວ ບໍ່ຕ້ອງພິມລິ້ງ ມີໄອຄອນຢູ່ໜ້າຈໍ','เปิดเร็ว ไม่ต้องพิมพ์ลิงก์ มีไอคอนบนหน้าจอ','Opens fast from an icon on your home screen'],['ຕິດຕັ້ງ','ติดตั้ง','Install'],['ປິດ','ปิด','Close'],['ຕິດຕັ້ງແລ້ວ','ติดตั้งแล้ว','Installed'],
 ['ກີບ','กีบ','Kip'],['ບາດ','บาท','Baht'],['ໂດລາ','ดอลลาร์','Dollar'],
 ['ສ້າງ','สร้าง','New'],['ບິນຂາຍ','บิลขาย','Sales bill'],['ສະແດງ','แสดง','Show'],['ຍັງບໍ່ມີລາຍເຊັນ — ຕັ້ງໃນ ⚙️ ຕັ້ງຄ່າ','ยังไม่มีลายเซ็น — ตั้งใน ⚙️ ตั้งค่า','No signature yet — set it in ⚙️ Settings'],['ຍັງບໍ່ໄດ້ຕັ້ງ','ยังไม่ได้ตั้ง','not set'],['ສະແດງ QR & ເລກບັນຊີ','แสดง QR & เลขบัญชี','Show QR & bank account'],
 ];
@@ -1338,6 +1352,30 @@ function langBar(){return `<div class="lang" data-notr>${LANGS.map(([k,l])=>`<bu
 function setLang(l){if(l===LANG)return;try{localStorage.setItem('sks_lang',l);sessionStorage.setItem('sks_view',view==='edit'||view==='preview'?'home':view)}catch(e){}location.reload()}
 document.querySelectorAll('.langslot').forEach(e=>e.innerHTML=langBar());
 trNode(document.body);
+
+/* ---------- install as a phone/desktop app (PWA) ---------- */
+let installEvt=null,instHelp=false;
+const isStandalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const inAppBrowser=()=>/FBAN|FBAV|FB_IAB|Instagram|Line\/|WhatsApp|Messenger|MicroMessenger|zalo/i.test(navigator.userAgent);
+let instHidden=(()=>{try{return sessionStorage.getItem('sks_insthide')==='1'}catch(e){return false}})();
+function installBanner(){
+  if(isStandalone()||instHidden)return '';
+  const help=!instHelp?'':inAppBrowser()
+    ?`⚠️ ທ່ານກຳລັງເປີດລິ້ງໃນແອັບ Facebook / WhatsApp / LINE ເຊິ່ງຕິດຕັ້ງບໍ່ໄດ້.<br>ກົດ <b>⋮</b> ຫຼື <b>…</b> ມຸມຂວາເທິງ → <b>ເປີດໃນ Chrome</b> (Android) ຫຼື <b>ເປີດໃນ Safari</b> (iPhone) ແລ້ວກົດຕິດຕັ້ງອີກຄັ້ງ.`
+    :isIOS()
+    ?`📱 <b>iPhone / iPad</b> (ຕ້ອງໃຊ້ Safari):<br>1. ກົດປຸ່ມ <b>ແບ່ງປັນ</b> <span style="font-size:18px">⎋</span> (ສີ່ຫຼ່ຽມມີລູກສອນຂຶ້ນ) ລຸ່ມຈໍ<br>2. ເລື່ອນລົງ ກົດ <b>Add to Home Screen / ເພີ່ມໄປໜ້າຈໍຫຼັກ</b><br>3. ກົດ <b>Add / ເພີ່ມ</b>`
+    :`📱 <b>Android</b> (Chrome):<br>1. ກົດ <b>⋮</b> ມຸມຂວາເທິງ<br>2. ກົດ <b>Install app / ຕິດຕັ້ງແອັບ</b> ຫຼື <b>Add to Home screen / ເພີ່ມໃສ່ໜ້າຈໍຫຼັກ</b><br>3. ກົດ <b>Install / ຕິດຕັ້ງ</b>`;
+  return `<div class="instb"><div class="ii">📲</div><div style="flex:1"><b>ຕິດຕັ້ງແອັບລົງມືຖື / ຄອມ</b><small>ເປີດໄວ ບໍ່ຕ້ອງພິມລິ້ງ ມີໄອຄອນຢູ່ໜ້າຈໍ</small></div>
+    <button class="btn pri" onclick="doInstall()">ຕິດຕັ້ງ</button><button class="x" title="ປິດ" onclick="instHidden=true;try{sessionStorage.setItem('sks_insthide','1')}catch(e){};home()">×</button></div>${help?`<div class="insthelp">${help}</div>`:''}`;
+}
+async function doInstall(){
+  if(installEvt){installEvt.prompt();const r=await installEvt.userChoice;installEvt=null;if(r.outcome==='accepted')showToast('✅ ຕິດຕັ້ງແລ້ວ');if(view==='home')home();return}
+  instHelp=!instHelp;if(view==='home')home();
+}
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e});
+addEventListener('appinstalled',()=>{installEvt=null;if(view==='home')home()});
+if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(e=>console.warn('sw',e));
 
 document.querySelectorAll('img[data-logo]').forEach(i=>i.src=LOGO);
 setSync(cloudOn()?'busy':'local');
